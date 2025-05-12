@@ -6,4 +6,5 @@
     src: url("/fonts/OperaSignature-Script.otf") format("opentype");
     font-display: swap;
   }
-  
+  @import "./gallery.css";
+ 

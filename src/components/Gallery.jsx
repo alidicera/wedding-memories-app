@@ -1,42 +1,41 @@
-import { useEffect, useState } from 'react'
+import { useState, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 
-export default function Gallery({ code }) {
-  const [items, setItems] = useState([])
+export default function UploadArea({ code }) {
+  const [progress, setProgress] = useState(0)
+  const fileInput = useRef(null)
 
-  useEffect(() => {
-    const load = async () => {
-      const { data, error } = await supabase.from('media').select('*').eq('code', code).order('created_at', { ascending: false })
-      if (!error) setItems(data)
-    }
-    load()
-
-    const { data: sub } = supabase.channel('media-channel')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'media', filter: `code=eq.${code}` }, payload => {
-        setItems(prev => [payload.new, ...prev])
+  const handleFiles = async files => {
+    for (const file of files) {
+      const path = `${code}/${Date.now()}-${file.name}`
+      const { data, error } = await supabase.storage.from('wedding-media').upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+        onUploadProgress: e => setProgress(Math.round((e.loaded * 100) / e.total))
       })
-      .subscribe()
-    return () => supabase.removeChannel(sub)
-  }, [code])
-
-  if (!items.length) return <p className="text-gray-500">No memories yet. Be the first! ✨</p>
+      if (error) console.error(error)
+      else {
+        await supabase.from('media').insert({ code, path, mime: file.type })
+      }
+    }
+    setProgress(0)
+  }
 
   return (
-    <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {items.map(item => <MediaCard key={item.id} item={item} />)}
-    </div>
-  )
-}
-
-function MediaCard({ item }) {
-  const url = supabase.storage.from('wedding-media').getPublicUrl(item.path).data.publicUrl
-  return (
-    <div className="relative overflow-hidden rounded-xl shadow-sm">
-      {item.mime.startsWith('video') ? (
-        <video src={url} controls muted className="w-full h-full object-cover" />
-      ) : (
-        <img src={url} alt="memory" className="w-full h-full object-cover" />
-      )}
+    <div
+      className="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer hover:bg-gray-50"
+      onDragOver={e => e.preventDefault()}
+      onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files) }}
+      onClick={() => fileInput.current.click()}
+    >
+      <p className="mb-2">Drag & drop or tap to select photos/videos {progress ? `(${progress}%)` : ''}</p>
+      // dentro return (...)
+<input
+  type="file"
+  multiple
+  accept="image/*,video/*"    // ora accetta anche video
+  onChange={handleUpload}
+/>
     </div>
   )
 }
