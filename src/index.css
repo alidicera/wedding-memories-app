@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@font-face {
+    font-family: "OperaSignature";
+    src: url("/fonts/OperaSignature-Script.otf") format("opentype");
+    font-display: swap;
+  }
+  
