@@ -1,13 +1,20 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import Admin from './pages/Admin'
-import Event from './pages/Event'
+import UploadArea from './components/UploadArea'
+import Gallery   from './components/Gallery'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/admin" />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="/e/:code" element={<Event />} />
-    </Routes>
+    <div className="min-h-screen bg-white">
+      <header className="text-center py-8">
+        <h1 className="text-4xl font-bold mb-2">Wedding Memories</h1>
+        <p>Scansiona il QR code e carica le tue foto/video!</p>
+      </header>
+      <main className="container mx-auto px-4">
+        <UploadArea />
+        <Gallery />
+      </main>
+    </div>
   )
 }
+
+
+

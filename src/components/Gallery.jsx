@@ -1,44 +1,41 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 
-export default function Gallery({ code }) {
+export default function Gallery() {
   const [media, setMedia] = useState([])
 
   useEffect(() => {
-    const load = async () => {
-      const { data, error } = await supabase
-        .from('media')
-        .select('id, path, mime')
-        .eq('code', code)
-        .order('created_at', { ascending: false })
-
-      if (error) console.error(error)
-      else setMedia(data)
-    }
-    load()
-  }, [code])
+    supabase
+      .from('media')
+      .select('id,path,mime')
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) console.error(error)
+        else setMedia(data)
+      })
+  }, [])
 
   const publicUrl = path =>
     supabase.storage.from('wedding-media').getPublicUrl(path).data.publicUrl
 
-  if (!media.length)
-    return <p className="text-gray-500">Ancora nessun ricordo… ✨</p>
+  if (!media.length) {
+    return <p className="text-center text-gray-500">Nessun ricordo caricato… ✨</p>
+  }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {media.map(item =>
-        item.mime.startsWith('image') ? (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-12">
+      {media.map(({ id, path, mime }) =>
+        mime.startsWith('image') ? (
           <img
-            key={item.id}
-            src={publicUrl(item.path)}
-            alt=""
+            key={id}
+            src={publicUrl(path)}
             className="rounded-lg object-cover w-full h-64"
           />
         ) : (
           <video
-            key={item.id}
+            key={id}
             controls
-            src={publicUrl(item.path)}
+            src={publicUrl(path)}
             className="rounded-lg object-cover w-full h-64"
           />
         )
@@ -46,4 +43,6 @@ export default function Gallery({ code }) {
     </div>
   )
 }
+
+
 

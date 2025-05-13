@@ -1,26 +1,21 @@
 import { useState, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 
-export default function UploadArea({ code }) {
+export default function UploadArea() {
   const [progress, setProgress] = useState(0)
-  const fileInput = useRef()
+  const fileInput = useRef(null)
 
   const uploadOne = async file => {
-    const path = `${code}/${Date.now()}-${file.name}`
-
-    // upload su storage
+    const path = `${Date.now()}_${file.name}`
     const { error: upErr } = await supabase
       .storage
       .from('wedding-media')
       .upload(path, file, { cacheControl: '3600', upsert: false })
-
     if (upErr) throw upErr
 
-    // insert record
     const { error: dbErr } = await supabase
       .from('media')
-      .insert({ code, path, mime: file.type })
-
+      .insert({ path, mime: file.type })
     if (dbErr) throw dbErr
   }
 
@@ -32,7 +27,7 @@ export default function UploadArea({ code }) {
         await uploadOne(files[i])
       } catch (err) {
         console.error(err)
-        alert('Errore upload ' + files[i].name)
+        alert('Errore caricamento ‘' + files[i].name + '’')
       }
     }
     setProgress(0)
@@ -41,17 +36,13 @@ export default function UploadArea({ code }) {
 
   return (
     <div
-      className="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer hover:bg-gray-50"
+      className="border-2 border-dashed rounded-2xl p-6 text-center my-8 cursor-pointer hover:bg-gray-50"
       onDragOver={e => e.preventDefault()}
-      onDrop={e => {
-        e.preventDefault()
-        handleFiles(e.dataTransfer.files)
-      }}
+      onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files) }}
       onClick={() => fileInput.current.click()}
     >
       <p className="mb-2">
-        Trascina o clicca per caricare foto/video{' '}
-        {progress ? `(${progress} %)` : ''}
+        Trascina o clicca per caricare foto/video {progress ? `(${progress}%)` : ''}
       </p>
       <input
         ref={fileInput}
@@ -64,6 +55,8 @@ export default function UploadArea({ code }) {
     </div>
   )
 }
+
+
 
 
 
