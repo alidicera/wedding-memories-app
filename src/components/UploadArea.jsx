@@ -1,79 +1,73 @@
-import { useState, useRef } from 'react';
-import { supabase } from '../supabaseClient';
+import { useState, useRef } from 'react'
+import { supabase } from '../supabaseClient'
 
 export default function UploadArea({ code }) {
-  const [progress, setProgress] = useState(0);       // % di caricamento
-  const fileInput   = useRef(null);
+  const [progress, setProgress] = useState(0)
+  const fileInput = useRef(null)
 
-  /** Carica tutti i file ricevuti (foto o video) */
-  async function uploadFiles(files) {
+  /** carica uno o più file */
+  const handleFiles = async (files) => {
     for (const file of files) {
-      // path univoco: <codice-evento>/<uuid>.<ext>
-      const ext  = file.name.split('.').pop();
-      const path = `${code}/${crypto.randomUUID()}.${ext}`;
+      // percorso:  ABC123/1717079467834-foto.jpg
+      const path = `${code}/${Date.now()}-${file.name}`
 
-      // upload sul bucket wedding‑media
-      const { error } = await supabase.storage
+      // 1️⃣ upload nello Storage
+      const { error: storageErr } = await supabase.storage
         .from('wedding-media')
         .upload(path, file, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type,
-          onUploadProgress: e =>
+          onUploadProgress: (e) =>
             setProgress(Math.round((e.loaded * 100) / e.total)),
-        });
+        })
 
-      if (error) {
-        console.error('Upload error:', error.message);
-        alert('Errore durante l’upload: ' + error.message);
-        continue;
+      if (storageErr) {
+        console.error(storageErr)
+        continue
       }
 
-      /* Scrive un record in tabella media
-         (se hai già il trigger che lo fa in automatico,
-         questa insert è opzionale e puoi toglierla) */
-      await supabase
+      // 2️⃣ salva metadati nella tabella `media`
+      const { error: dbErr } = await supabase
         .from('media')
-        .insert({ code, path, mime_type: file.type });
+        .insert({ code, path, mime: file.type })
+
+      if (dbErr) console.error(dbErr)
     }
-    setProgress(0);          // reset barra
+
+    // reset barra di progresso
+    setProgress(0)
   }
 
-  /** Gestore del <input type="file"> */
-  function handleSelect(e) {
-    const files = e.target.files;
-    if (files?.length) uploadFiles(files);
-  }
-
-  /** Gestore del drag‑and‑drop */
-  function handleDrop(e) {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (files?.length) uploadFiles(files);
+  /** collegato all’input file */
+  const handleUpload = (e) => {
+    if (e.target.files?.length) handleFiles(e.target.files)
   }
 
   return (
     <div
-      className="border-2 border-dashed rounded-2xl p-6 text-center
-                 cursor-pointer hover:bg-gray-50 transition"
-      onDragOver={e => e.preventDefault()}
-      onDrop={handleDrop}
+      className="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer hover:bg-gray-50"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault()
+        handleFiles(e.dataTransfer.files)
+      }}
       onClick={() => fileInput.current.click()}
     >
       <p className="mb-2">
-        Drag & drop oppure clicca per scegliere file
-        {progress ? ` (${progress} %)` : ''}
+        Drag & drop or tap to select photos/videos{' '}
+        {progress ? `(${progress} %)` : ''}
       </p>
 
-      {/* input nascosto */}
+      {/* nascosto finché non si clicca */}
       <input
         ref={fileInput}
         type="file"
         multiple
         accept="image/*,video/*"
         className="hidden"
-        onChange={handleSelect}
+        onChange={handleUpload}
       />
     </div>
-  );
+  )
 }
+
