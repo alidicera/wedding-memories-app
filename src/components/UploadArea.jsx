@@ -1,3 +1,4 @@
+// src/components/UploadArea.jsx
 import { useState, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 
@@ -7,23 +8,31 @@ export default function UploadArea({ code }) {
 
   const uploadOne = async file => {
     const path = `${code}/${Date.now()}-${file.name}`
+
+    // upload su Storage
     const { error: upErr } = await supabase
       .storage
       .from('wedding-media')
       .upload(path, file, { cacheControl: '3600', upsert: false })
     if (upErr) throw upErr
+
+    // inserimento record in tabella media
     const { error: dbErr } = await supabase
       .from('media')
       .insert({ code, path, mime: file.type })
     if (dbErr) throw dbErr
   }
 
-  const handleFiles = async files => {
-    const arr = Array.from(files)
-    for (let i = 0; i < arr.length; i++) {
-      setProgress(Math.round(((i + 1) / arr.length) * 100))
-      try { await uploadOne(arr[i]) }
-      catch (e) { console.error(e); alert('Errore: '+e.message) }
+  const handleFiles = async fileList => {
+    const files = Array.from(fileList)
+    for (let i = 0; i < files.length; i++) {
+      setProgress(Math.round(((i + 1) / files.length) * 100))
+      try {
+        await uploadOne(files[i])
+      } catch (err) {
+        console.error(err)
+        alert(`Errore durante il caricamento di ${files[i].name}`)
+      }
     }
     setProgress(0)
     fileInput.current.value = ''
@@ -31,13 +40,13 @@ export default function UploadArea({ code }) {
 
   return (
     <div
-      className="border-2 border-dashed rounded-xl p-6 text-center hover:bg-gray-100 cursor-pointer"
-      onClick={() => fileInput.current.click()}
+      className="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer hover:bg-gray-50"
       onDragOver={e => e.preventDefault()}
       onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files) }}
+      onClick={() => fileInput.current.click()}
     >
       <p className="mb-2">
-        Trascina o clicca per caricare foto/video {progress ? `(${progress}%)` : ''}
+        Trascina o clicca per caricare foto/video {progress ? `(${progress} %)` : ''}
       </p>
       <input
         ref={fileInput}
@@ -50,6 +59,7 @@ export default function UploadArea({ code }) {
     </div>
   )
 }
+
 
 
 
