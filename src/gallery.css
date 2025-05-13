@@ -1,4 +1,6 @@
 .columns-2xl { column-count: 4; column-gap: 1rem; }
-@media (max-width: 1024px){ .columns-2xl{ column-count: 3; } }
-@media (max-width: 768px) { .columns-2xl{ column-count: 2; } }
+@media (max-width: 1024px) { .columns-2xl { column-count: 3; } }
+@media (max-width: 768px) { .columns-2xl { column-count: 2; } }
 video, img { width: 100%; display: block; border-radius: 0.75rem; }
+
+
