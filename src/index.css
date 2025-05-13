@@ -1,4 +1,4 @@
-@import './index.css'      // qui dentro hai @tailwind base; @tailwind components; @tailwind utilities
+import './index.css'      // qui dentro hai @tailwind base; @tailwind components; @tailwind utilities
 @import "./gallery.css";
 @tailwind base;
 @tailwind components;
