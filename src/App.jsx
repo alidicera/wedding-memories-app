@@ -1,17 +1,18 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Admin     from './pages/Admin'
 import EventPage from './pages/EventPage'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Tutti arrivano qui (root) */}
-        <Route path="/" element={<EventPage />} />
+        <Route path="/" element={<Admin />} />
+        <Route path="/:code" element={<EventPage />} />
       </Routes>
     </BrowserRouter>
   )
 }
+
 
 
 
