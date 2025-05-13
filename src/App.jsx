@@ -1,20 +1,21 @@
+import { useState } from 'react'
 import UploadArea from './components/UploadArea'
 import Gallery   from './components/Gallery'
 
 export default function App() {
+  const [code, setCode] = useState('UNICO-CODE')
+
   return (
-    <div className="min-h-screen bg-white">
-      <header className="text-center py-8">
-        <h1 className="text-4xl font-bold mb-2">Wedding Memories</h1>
-        <p>Scansiona il QR code e carica le tue foto/video!</p>
-      </header>
-      <main className="container mx-auto px-4">
-        <UploadArea />
-        <Gallery />
-      </main>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <h1 className="text-3xl font-bold mb-6 text-center">Carica i tuoi ricordi 📸🎥</h1>
+      <div className="max-w-xl mx-auto space-y-8">
+        <UploadArea code={code} />
+        <Gallery   code={code} />
+      </div>
     </div>
   )
 }
+
 
 
 
