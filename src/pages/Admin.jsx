@@ -1,48 +1,45 @@
-// src/pages/Admin.jsx
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { QRCodeSVG } from 'qrcode.react'   // ← import nominato
+import { nanoid } from 'nanoid'
+import { QRCodeSVG } from 'qrcode.react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Admin() {
-  const [events, setEvents] = useState([])
-
-  useEffect(() => {
-    ;(async () => {
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .order('created_at', { ascending: false })
-      if (!error) setEvents(data)
-    })()
-  }, [])
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   const createEvent = async () => {
-    const { data, error } = await supabase
+    setLoading(true)
+    // genera un codice univoco di 6 caratteri
+    const code = nanoid(6).toUpperCase()
+
+    // inserisci nel DB (tabella "events" con colonna "code")
+    const { error } = await supabase
       .from('events')
-      .insert({})
-      .single()
-    if (!error) setEvents(ev => [data, ...ev])
+      .insert({ code })
+
+    if (error) {
+      alert('Errore nella creazione evento: ' + error.message)
+      setLoading(false)
+      return
+    }
+
+    // poi reindirizza alla pagina evento
+    navigate(`/event/${code}`)
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Dashboard Matrimonio</h1>
+    <div className="container mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-4">Dashboard Matrimonio</h1>
       <button
         onClick={createEvent}
-        className="mb-6 px-4 py-2 bg-blue-600 text-white rounded"
+        disabled={loading}
+        className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
       >
-        Crea nuovo evento
+        {loading ? 'Creo…' : 'Crea nuovo evento'}
       </button>
-
-      {events.map(ev => (
-        <div key={ev.id} className="mb-8 p-4 border rounded-lg shadow-sm">
-          <p className="font-mono mb-2">Codice evento: {ev.code}</p>
-          <QRCodeSVG
-            value={`${window.location.origin}/e/${ev.code}`}
-            size={128}
-          />
-        </div>
-      ))}
+      {/** mostra il QR + link diretto solo dopo che loading è false e code esiste */}
     </div>
   )
 }
+
