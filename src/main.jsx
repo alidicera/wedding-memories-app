@@ -1,12 +1,15 @@
+// src/main.jsx
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import App from './App'
-import './index.css'
+import './index.css'         // importa qui il tuo CSS TAILWIND
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  <BrowserRouter>
     <App />
-  </React.StrictMode>
+  </BrowserRouter>
 )
+
 
 
