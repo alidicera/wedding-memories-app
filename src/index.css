@@ -1,3 +1,4 @@
+@import "./gallery.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,5 +7,5 @@
     src: url("/fonts/OperaSignature-Script.otf") format("opentype");
     font-display: swap;
   }
-  @import "./gallery.css";
+  
  
