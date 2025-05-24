@@ -1,53 +1,34 @@
-import { useState } from 'react';
-import UploadArea from '../components/UploadArea.jsx';
-import Gallery    from '../components/Gallery.jsx';
+// src/pages/Event.jsx
+import UploadArea from '../components/UploadArea';
+import Gallery    from '../components/Gallery';
 
-const EVENT_CODE =
-  import.meta.env.VITE_EVENT_CODE?.trim() || 'vitoedaniela';
-
-export default function EventPage() {
-  const [show, setShow]       = useState(false);   // mostro/nascondo galleria
-  const [refresh, setRefresh] = useState(0);       // forza reload media
-
-  /** scatta quando UploadArea ha finito */
-  const handleDone = () => {
-    if (show) setRefresh(Date.now());  // se galleria già visibile, ricarica
-  };
-
-  /** clic sul pulsante in basso */
-  const toggleGallery = () => {
-    if (show) setRefresh(Date.now());  // se è già aperta ⇒ “Aggiorna”
-    setShow(true);                     // altrimenti la faccio comparire
-  };
-
+export default function EventPage({ code, title }) {
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <h1 className="text-3xl font-bold mb-6">
-        Matrimonio 3 Giugno a Molfetta
-      </h1>
+    <div className="mx-auto max-w-5xl px-4 py-6">
+      {/* HERO */}
+      <header className="mb-8 text-center">
+        <h1 className="font-serif text-3xl md:text-4xl font-bold">
+          {title}
+        </h1>
+        <p className="text-gray-500 mt-2">
+          Condividi qui le tue foto e i tuoi video 💕
+        </p>
+      </header>
 
-      <UploadArea code={EVENT_CODE} onDone={handleDone} />
+      {/* UPLOAD */}
+      <section className="mb-10">
+        <UploadArea code={code} />
+      </section>
 
-      {/* pulsante per mostrare / aggiornare */}
-      <div className="text-center mt-8">
-        <button
-          onClick={toggleGallery}
-          className="inline-block bg-blue-600 hover:bg-blue-700
-                     text-white px-4 py-2 rounded transition"
-        >
-          {show ? 'Aggiorna galleria' : 'Mostra galleria'}
-        </button>
-      </div>
-
-      {/* galleria visibile solo dopo il click */}
-      {show && (
-        <div className="mt-8">
-          <Gallery code={EVENT_CODE} refresh={refresh} />
-        </div>
-      )}
+      {/* GALLERY */}
+      <section>
+        <h2 className="sr-only">Galleria</h2>
+        <Gallery code={code} />
+      </section>
     </div>
   );
 }
+
 
 
 
