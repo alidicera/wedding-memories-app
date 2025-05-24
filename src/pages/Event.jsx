@@ -1,24 +1,27 @@
-import { useParams } from 'react-router-dom';
-import Gallery      from '../components/Gallery';
-import UploadArea   from '../components/UploadArea';
+import UploadArea from '../components/UploadArea';
+import Gallery from '../components/Gallery';
 
-export default function Event() {
-  const { code } = useParams();   // es. 362025
+export default function EventPage() {
+  const code = 'vitoedaniela';
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">
-        Matrimonio 3 Giugno a Molfetta
-      </h1>
-
-      {/* area di upload */}
-      <UploadArea code={code} onDone={() => {/* refresh via Gallery */}} />
-
-      {/* mini-gallery sotto */}
-      <Gallery code={code} />
+    <div className="p-6 max-w-3xl mx-auto text-center">
+      <h1 className="text-2xl font-bold mb-4">Matrimonio 3 Giugno a Molfetta</h1>
+      <UploadArea code={code} />
+      <hr className="my-8" />
+      <button
+        onClick={() => document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Guarda le foto qui 📸
+      </button>
+      <div id="gallery" className="mt-6">
+        <Gallery code={code} />
+      </div>
     </div>
   );
 }
+
 
 
 
