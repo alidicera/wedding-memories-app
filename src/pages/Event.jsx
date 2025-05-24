@@ -1,26 +1,25 @@
-import UploadArea from '../components/UploadArea';
-import Gallery from '../components/Gallery';
+import UploadArea from '../components/UploadArea.jsx'
+import Gallery    from '../components/Gallery.jsx'
 
-export default function EventPage() {
-  const code = 'vitoedaniela';
-
+export default function EventPage({ code }) {
   return (
-    <div className="p-6 max-w-3xl mx-auto text-center">
-      <h1 className="text-2xl font-bold mb-4">Matrimonio 3 Giugno a Molfetta</h1>
+    <div className="max-w-4xl mx-auto px-6 py-10">
+      <h1 className="text-3xl font-bold mb-6">
+        Matrimonio 3 Giugno a Molfetta
+      </h1>
+
+      {/* Upload */}
       <UploadArea code={code} />
-      <hr className="my-8" />
-      <button
-        onClick={() => document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        Guarda le foto qui 📸
-      </button>
-      <div id="gallery" className="mt-6">
-        <Gallery code={code} />
-      </div>
+
+      {/* Spaziatore */}
+      <div className="my-10 h-px bg-gray-200" />
+
+      {/* Galleria (lazy) */}
+      <Gallery code={code} />
     </div>
-  );
+  )
 }
+
 
 
 
