@@ -123,13 +123,3 @@ export default function Gallery({ code, refresh = 0 }) {
     </>
   );
 }
-
-
-
-
-
-
-
-
-
-
