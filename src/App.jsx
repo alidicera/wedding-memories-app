@@ -1,21 +1,20 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import EventPage  from './pages/Event.jsx'
-import NotFound   from './pages/NotFound.jsx'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import EventPage from './pages/Event.jsx';
 
-/**
- * Un solo evento pubblico: /viteodaniela
- * Se vai su /              → redirect al percorso evento
- * Per qualunque altra rotta → 404
- */
 export default function App() {
   return (
     <Routes>
-      <Route index         element={<Navigate to="/viteodaniela" replace />} />
-      <Route path="/viteodaniela" element={<EventPage code="viteodaniela" />} />
-      <Route path="*"      element={<NotFound />} />
+      {/* redirect root → /vitoedaniela */}
+      <Route index element={<Navigate to="/vitoedaniela" replace />} />
+      {/* pagina evento */}
+      <Route path="/vitoedaniela" element={<EventPage />} />
+      {/* qualunque altra rotta → 404 semplice */}
+      <Route path="*" element={<p className="p-6 text-center">404 – Pagina non trovata</p>} />
     </Routes>
-  )
+  );
 }
+
+
 
 
 
