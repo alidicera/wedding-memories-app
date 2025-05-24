@@ -10,6 +10,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.43.1",
+    "heic2any": "^0.0.4",
     "nanoid": "^5.1.5",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.0",

@@ -1,87 +1,81 @@
-import { useState, useRef } from "react";
-import { supabase } from "../supabaseClient";
-
-/* ─────────────  mini-toast senza librerie  ───────────── */
-function toast(msg, ok = true) {
-  const el = document.createElement("div");
-  el.textContent = msg;
-  el.style.cssText = `
-    position:fixed;left:50%;top:20px;transform:translateX(-50%);
-    padding:.6rem 1.1rem;border-radius:8px;font:600 14px/1 sans-serif;
-    color:#fff;background:${ok ? "#22c55e" : "#ef4444"};
-    z-index:9999;opacity:0;transition:.3s;box-shadow:0 3px 8px rgba(0,0,0,.2);
-  `;
-  document.body.appendChild(el);
-  requestAnimationFrame(() => (el.style.opacity = 1));
-  setTimeout(() => {
-    el.style.opacity = 0;
-    setTimeout(() => el.remove(), 400);
-  }, 2500);
-}
-/* ─────────────────────────────────────────────────────── */
+import heic2any from 'heic2any';
+import { supabase } from '../supabaseClient';
+import { useState, useRef } from 'react';
 
 export default function UploadArea({ code, onDone }) {
   const [progress, setProgress] = useState(0);
-  const fileInput               = useRef(null);
+  const ref = useRef(null);
 
-  /* ⋯ singolo file → Storage + record in media */
-  const uploadOne = async file => {
-    const path = `${code}/${Date.now()}-${file.name}`;
+  // 🔄  HEIC → JPEG
+  const normalizeFile = async f => {
+    const isHeic = f.type === 'image/heic' ||
+                   f.name.toLowerCase().endsWith('.heic');
 
-    const { error: upErr } = await supabase
-      .storage
-      .from("wedding-media")
-      .upload(path, file, { cacheControl: "3600", upsert: false });
-    if (upErr) throw upErr;
+    if (!isHeic) return f;
 
-    const { error: dbErr } = await supabase
-      .from("media")
-      .insert({ code, path, mime: file.type });
-    if (dbErr) throw dbErr;
+    const blob = await heic2any({
+      blob: f,
+      toType: 'image/jpeg',
+      quality: 0.8,
+    });
+
+    return new File([blob], f.name.replace(/\.heic$/i, '.jpg'), {
+      type: 'image/jpeg',
+      lastModified: f.lastModified,
+    });
   };
 
-  /* ⋯ ciclo su tutti i file selezionati / droppati  */
-  const handleFiles = async list => {
+  const handle = async list => {
     const files = Array.from(list);
+
     for (let i = 0; i < files.length; i++) {
       setProgress(Math.round(((i + 1) / files.length) * 100));
-      try {
-        await uploadOne(files[i]);
-        toast(`✅ ${files[i].name} caricato!`);
-      } catch (err) {
-        console.error(err);
-        toast(`❌ Errore su ${files[i].name}`, false);
+
+      // --- conversione se serve
+      const file = await normalizeFile(files[i]);
+
+      const path = `${code}/${Date.now()}-${file.name}`;
+      const { error: upErr } =
+        await supabase.storage.from('wedding-media')
+          .upload(path, file, { cacheControl: '3600', upsert: false });
+
+      if (upErr) {
+        alert('Errore: ' + upErr.message);
+        continue;
       }
+      await supabase.from('media')
+        .insert({ code, path, mime: file.type });
     }
+
     setProgress(0);
-    fileInput.current.value = "";
-    onDone && onDone();               // avvisa il padre di ricaricare la galleria
+    ref.current.value = '';
+    onDone?.();              // ricarica la galleria se vuoi
   };
 
   return (
     <div
-      className="border-2 border-dashed rounded-2xl p-6 text-center
-                 cursor-pointer hover:bg-gray-50 transition"
+      className="border-2 border-dashed rounded-xl p-4 text-center
+                 cursor-pointer hover:bg-gray-50"
       onDragOver={e => e.preventDefault()}
-      onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
-      onClick={() => fileInput.current.click()}
+      onDrop={e => { e.preventDefault(); handle(e.dataTransfer.files); }}
+      onClick={() => ref.current.click()}
     >
       <p>
-        Trascina o clicca per caricare foto/video{" "}
-        {progress ? `(${progress} %)` : ""}
+        Trascina o clicca per caricare foto / video
+        {progress ? ` (${progress} %)` : ''}
       </p>
-
       <input
-        ref={fileInput}
+        ref={ref}
         type="file"
-        multiple
         accept="image/*,video/*"
+        multiple
         className="hidden"
-        onChange={e => handleFiles(e.target.files)}
+        onChange={e => handle(e.target.files)}
       />
     </div>
   );
 }
+
 
 
 
